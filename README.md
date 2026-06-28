@@ -128,7 +128,6 @@ LLM (Groq / OpenAI) → generates structured answer
 | `load_summarize_chain` | `langchain.chains.summarize` | Map-reduce summary |
 | `PromptTemplate` | `langchain_core.prompts` | Custom prompts |
 | `ChatGroq` | `langchain_groq` | Groq LLM |
-| `ChatOpenAI` | `langchain_openai` | OpenAI LLM |
 
 ---
 
