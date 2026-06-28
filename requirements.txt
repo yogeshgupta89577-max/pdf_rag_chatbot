@@ -1,0 +1,25 @@
+# ── Core LangChain ─────────────────────────────────────────────────────────
+langchain==0.3.7
+langchain-core==0.3.17
+langchain-community==0.3.7
+
+# ── LLM Providers (install the one you need) ────────────────────────────────
+langchain-groq==0.2.1          # FREE — get key at console.groq.com
+langchain-openai==0.2.9        # Paid  — get key at platform.openai.com
+
+# ── Embeddings (runs locally, no API key needed) ────────────────────────────
+langchain-huggingface==0.1.2
+sentence-transformers==3.3.1
+
+# ── Vector Store ─────────────────────────────────────────────────────────────
+faiss-cpu==1.9.0               # CPU version — works on any machine
+
+# ── PDF Loading ──────────────────────────────────────────────────────────────
+pypdf==5.1.0
+
+# ── UI ───────────────────────────────────────────────────────────────────────
+streamlit==1.40.0
+
+# ── Utilities ────────────────────────────────────────────────────────────────
+python-dotenv==1.0.1           # load .env file
+tiktoken==0.8.0                # token counting (used by OpenAI chain)
