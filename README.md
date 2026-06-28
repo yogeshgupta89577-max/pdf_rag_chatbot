@@ -149,7 +149,7 @@ Modify `QA_PROMPT_TEMPLATE` to add / remove sections.
 
 **Switch LLM** → use the sidebar dropdown in the app or change:
 ```python
-GROQ_MODEL   = "llama3-70b-8192"   # bigger, smarter Groq model
+GROQ_MODEL   = "llama-3.1-8b-instant"   # bigger, smarter Groq model
 ```
 
 ---
