@@ -21,4 +21,4 @@ streamlit==1.40.0
 
 # ── Utilities ────────────────────────────────────────────────────────────────
 python-dotenv==1.0.1           # load .env file
-tiktoken==0.8.0                # token counting (used by OpenAI chain)
+tiktoken>=0.9.0            # token counting (used by OpenAI chain)
