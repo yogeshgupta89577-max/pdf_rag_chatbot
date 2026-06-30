@@ -13,7 +13,7 @@ import os
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 from config import (
     CHUNK_SIZE,
@@ -27,20 +27,22 @@ from config import (
 # ─────────────────────────────────────────────────────────────────────────────
 # Embeddings
 # ─────────────────────────────────────────────────────────────────────────────
-def get_embeddings() -> HuggingFaceEmbeddings:
+def get_embeddings() -> GoogleGenerativeAIEmbeddings:
     """
-    Load the HuggingFace sentence-transformer model.
-    Runs 100 % locally — no API key, no cost.
-    First run downloads the model (~90 MB); subsequent runs use the cache.
+    Load Gemini Embedding model.
+    Uses Google's API (no local model download).
     """
-    print("⏳ Loading embedding model (first run may take ~30 s)…")
-    embeddings = HuggingFaceEmbeddings(
-        model_name=EMBEDDING_MODEL,
-        model_kwargs={"device": "cpu"},
-        encode_kwargs={"normalize_embeddings": True},
+
+    print("⏳ Loading Gemini Embedding model...")
+
+    embeddings = GoogleGenerativeAIEmbeddings(
+        model="models/gemini-embedding-001",
+        google_api_key=os.getenv("GOOGLE_API_KEY")
     )
-    print("✅ Embedding model loaded.")
-    return embeddings
+
+    print("✅ Gemini Embedding model loaded.")
+
+    return embeddings 
 
 
 # ─────────────────────────────────────────────────────────────────────────────

@@ -121,7 +121,7 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 [data-testid="stSidebar"] {
     background: linear-gradient(180deg, #1e1b4b 0%, #312e81 100%);
 }
-/* सिर्फ नॉर्मल टेक्स्ट को लाइट कलर दें, बैडगेस को नहीं */
+
 [data-testid="stSidebar"] h2, 
 [data-testid="stSidebar"] p, 
 [data-testid="stSidebar"] strong, 
@@ -131,7 +131,7 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 [data-testid="stSidebar"] .stSelectbox label,
 [data-testid="stSidebar"] .stTextInput label { color: #c7d2fe !important; font-size: 0.85rem; }
 
-/* ── Model info box (इसे संभाल कर रखें) ──────────────────────────────── */
+/* ── Model info box ──────────────────────────────── */
 .model-info-box {
     background: rgba(99, 102, 241, 0.15);
     border: 1px solid rgba(99, 102, 241, 0.4);
@@ -163,13 +163,13 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
     font-weight: 600;
     margin-bottom: 0.4rem;
 }
-/* !important का इस्तेमाल करके साइडबार के रूल को ओवरराइड किया गया है */
+
 .badge-green  { background-color: #dcfce7 !important; color: #15803d !important; }
 .badge-purple { background-color: #ede9fe !important; color: #6d28d9 !important; }
 .badge-blue   { background-color: #dbeafe !important; color: #1d4ed8 !important; }
 .badge-orange { background-color: #ffedd5 !important; color: #c2410c !important; }
 
-/* अगर साइडबार के अंदर ये बैडगेस आएं, तब भी कलर्स फिक्स रहें */
+
 [data-testid="stSidebar"] .badge-green  { color: #15803d !important; background-color: #dcfce7 !important; }
 [data-testid="stSidebar"] .badge-purple { color: #6d28d9 !important; background-color: #ede9fe !important; }
 [data-testid="stSidebar"] .badge-blue   { color: #1d4ed8 !important; background-color: #dbeafe !important; }

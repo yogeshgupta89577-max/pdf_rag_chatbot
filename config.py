@@ -14,7 +14,7 @@ GROQ_MODEL   = "llama-3.1-8b-instant"   # Fixed model, hardcoded
 
 # ── Embeddings ───────────────────────────────────────────────────────────────
 # Runs locally via sentence-transformers — completely FREE, no API key needed
-EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+EMBEDDING_MODEL = "gemini-embedding-001"
 
 # ── Text Splitter ─────────────────────────────────────────────────────────────
 CHUNK_SIZE    = 1000   # characters per chunk
