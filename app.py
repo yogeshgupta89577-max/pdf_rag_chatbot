@@ -10,7 +10,7 @@ import tempfile
 
 import streamlit as st
 
-from config import GROQ_API_KEY, GROQ_MODEL
+from config import GROQ_API_KEY, GROQ_MODEL, GOOGLE_API_KEY
 from rag_pipeline import RAGPipeline
 from summarizer import generate_summary
 
@@ -53,8 +53,6 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
     margin-bottom: 2rem;
 }
 
-
-
 /* ── Cards ───────────────────────────────────────────────────────────── */
 .card {
     background: #ffffff;
@@ -66,10 +64,9 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 }
 
 /* ── Summary box ─────────────────────────────────────────────────────── */
-/* ── Summary box (Forced High Contrast Light Theme Card) ─────────────────── */
 .summary-card {
     background-color: #ffffff !important;
-    color: #111827 !important; /* Forces dark text on light background */
+    color: #111827 !important; 
     border: 1px solid #d1d5db;
     border-left: 5px solid #6366f1;
     border-radius: 12px;
@@ -79,15 +76,14 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
     font-size: 1rem;
     font-weight: 500;
 }
-/* Ensure all child text elements within the summary card inherit the dark text */
 .summary-card *, .summary-card p, .summary-card li, .summary-card span {
     color: #111827 !important;
 }
 
-/* ── Chat bubbles (Forced Contrast) ────────────────────────────────────── */
+/* ── Chat bubbles ────────────────────────────────────────────────────── */
 .chat-user {
     background-color: #ede9fe !important;
-    color: #1e1b4b !important; /* Dark purple text */
+    color: #1e1b4b !important; 
     border-left: 4px solid #7c3aed;
     border-radius: 0 12px 12px 12px;
     padding: 0.85rem 1.1rem;
@@ -100,7 +96,7 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 
 .chat-bot {
     background-color: #f0fdf4 !important;
-    color: #062f4f !important; /* Dark green/blue text */
+    color: #062f4f !important; 
     border-left: 4px solid #22c55e;
     border-radius: 0 12px 12px 12px;
     padding: 0.85rem 1.1rem;
@@ -115,7 +111,6 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 
 .chat-label-user { font-weight: 600; color: #7c3aed !important; margin-bottom: 0.3rem; }
 .chat-label-bot  { font-weight: 600; color: #16a34a !important; margin-bottom: 0.3rem; }
-
 
 /* ── Sidebar ─────────────────────────────────────────────────────────── */
 [data-testid="stSidebar"] {
@@ -154,7 +149,7 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
     font-weight: 500;
 }
 
-/* ── Pill badge (Forced Text Colors) ────────────────────────────────── */
+/* ── Pill badge ─────────────────────────────────────────────────────── */
 .badge {
     display: inline-block;
     padding: 0.25rem 0.75rem;
@@ -168,7 +163,6 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 .badge-purple { background-color: #ede9fe !important; color: #6d28d9 !important; }
 .badge-blue   { background-color: #dbeafe !important; color: #1d4ed8 !important; }
 .badge-orange { background-color: #ffedd5 !important; color: #c2410c !important; }
-
 
 [data-testid="stSidebar"] .badge-green  { color: #15803d !important; background-color: #dcfce7 !important; }
 [data-testid="stSidebar"] .badge-purple { color: #6d28d9 !important; background-color: #ede9fe !important; }
@@ -188,7 +182,7 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 def init_session():
     defaults = {
         "rag_pipeline":   None,
-        "chat_history":   [],   # list of {"role": "user"|"assistant", "content": str}
+        "chat_history":   [],   
         "summary":        None,
         "pdf_processed":  False,
         "pdf_name":       "",
@@ -249,15 +243,17 @@ def render_sidebar():
             unsafe_allow_html=True,
         )
 
-        # API Key status indicator
-        if GROQ_API_KEY:
+        # API Keys validation status indicators
+        if GROQ_API_KEY and GOOGLE_API_KEY:
             st.markdown(
-                '<br><span class="badge badge-green">🔑 API Key: Configured ✓</span>',
+                '<br><span class="badge badge-green">🔑 API Keys: Configured ✓</span>',
                 unsafe_allow_html=True,
             )
         else:
-            st.warning("⚠️ GROQ_API_KEY not found in .env!", icon="⚠️")
-            st.caption("Add GROQ_API_KEY to your .env file → console.groq.com")
+            if not GROQ_API_KEY:
+                st.warning("⚠️ GROQ_API_KEY not found in .env!", icon="⚠️")
+            if not GOOGLE_API_KEY:
+                st.warning("⚠️ GOOGLE_API_KEY not found in .env!", icon="⚠️")
 
         st.markdown("<hr style='border-color:#4338ca;'>", unsafe_allow_html=True)
 
@@ -297,9 +293,9 @@ def render_sidebar():
         for badge in [
             ("🦜 LangChain", "badge-purple"),
             ("⚡ Groq LLM API", "badge-orange"),
-            ("🦙 Llama 3.3 70B", "badge-green"),
+            ("🦙 Llama 3.1", "badge-green"),
             ("🗄️ FAISS Vector Store", "badge-blue"),
-            ("🤗 HuggingFace Embeddings", "badge-green"),
+            ("🤖 Gemini Embeddings", "badge-green"),
             ("📄 PyPDF Loader", "badge-purple"),
             ("🎈 Streamlit UI", "badge-blue"),
         ]:
@@ -315,12 +311,11 @@ def render_sidebar():
 def tab_upload():
     st.markdown("### 📤 Upload Your PDF")
 
-    # Guard: API key must be present before allowing uploads
-    if not GROQ_API_KEY:
+    # Guard: Both API keys must be present before allowing uploads
+    if not GROQ_API_KEY or not GOOGLE_API_KEY:
         st.error(
-            "⚠️  **GROQ_API_KEY** not found. "
-            "Add it to your `.env` file and restart the app.\n\n"
-            "Get a free key → https://console.groq.com"
+            "⚠️  **API Keys Missing!** "
+            "Make sure both **GROQ_API_KEY** and **GOOGLE_API_KEY** are set in your `.env` file and restart the app."
         )
         return
 
@@ -350,7 +345,6 @@ def tab_upload():
                     progress = st.progress(0, text="Loading PDF…")
 
                     # Build RAG pipeline (loads + embeds + stores in FAISS)
-                    # Model & API key are inbuilt — no user input needed
                     pipeline = RAGPipeline(pdf_path=tmp_path)
                     st.session_state.rag_pipeline = pipeline
                     progress.progress(55, text="Generating summary…")
@@ -464,67 +458,67 @@ def tab_architecture():
 
     st.markdown(
         """
-```
 ╔══════════════════════════════════════════════════════════════════════╗
 ║                     PDF RAG PIPELINE                                ║
 ╚══════════════════════════════════════════════════════════════════════╝
 
-  📄 PDF File Upload
-        │
-        ▼
-  ┌─────────────────────┐
-  │   PyPDFLoader       │  ← Extracts text from every page
-  └──────────┬──────────┘
-             │
-             ▼
-  ┌────────────────────────────────┐
-  │  RecursiveCharacterTextSplitter│  ← chunk_size=1000, overlap=200
-  └──────────┬─────────────────────┘     splits at paragraphs → sentences
-             │
-             ▼
-  ┌─────────────────────────────┐
-  │  HuggingFace Embeddings     │  ← all-MiniLM-L6-v2 (FREE, local)
-  │  text → 384-dim vector      │    no API key needed
-  └──────────┬──────────────────┘
-             │
-             ▼
-  ┌─────────────────────┐
-  │  FAISS Vector Store │  ← Stores all chunk vectors on disk
-  └──────────┬──────────┘    lightning-fast similarity search
-             │
-  ═══════════════════════════════════════
-        QUERY TIME (per question)
-  ═══════════════════════════════════════
-             │
-       ❓ User Question
-             │
-             ▼
-  ┌─────────────────────┐
-  │  Similarity Search  │  ← cosine similarity → top-4 chunks retrieved
-  └──────────┬──────────┘
-             │
-             ▼
-  ┌──────────────────────────────────────┐
-  │  PromptTemplate                      │
-  │  {context} + {chat_history} + {q}    │  ← context-aware prompt
-  └──────────┬───────────────────────────┘
-             │
-             ▼
-  ┌──────────────────────────────────────────────────┐
-  │  Groq LLM  →  llama-3.3-70b-versatile (inbuilt) │
-  └──────────┬───────────────────────────────────────┘
-             │
-             ▼
-  📊 Structured Output
-     📌 Direct Answer
-     📖 Explanation
-     🔍 Source Reference
-     💡 Key Takeaway
+📄 PDF File Upload
+│
+▼
+┌─────────────────────┐
+│   PyPDFLoader       │  ← Extracts text from every page
+└──────────┬──────────┘
+│
+▼
+┌────────────────────────────────┐
+│  RecursiveCharacterTextSplitter│  ← chunk_size=1000, overlap=200
+└──────────┬─────────────────────┘     splits at paragraphs → sentences
+│
+▼
+┌─────────────────────────────┐
+│   Gemini Embeddings         │  ← models/gemini-embedding-001
+│   text → vector             │
 
-  ┌─────────────────────────────┐
-  │  ConversationBufferMemory   │  ← stores Q&A history for follow-ups
-  └─────────────────────────────┘
-```
+└──────────┬──────────────────┘
+│
+▼
+┌─────────────────────┐
+│  FAISS Vector Store │  ← Stores all chunk vectors on disk
+└──────────┬──────────┘    lightning-fast similarity search
+│
+═══════════════════════════════════════
+QUERY TIME (per question)
+═══════════════════════════════════════
+│
+❓ User Question
+│
+▼
+┌─────────────────────┐
+│  Similarity Search  │  ← cosine similarity → top-4 chunks retrieved
+└──────────┬──────────┘
+│
+▼
+┌──────────────────────────────────────┐
+│  PromptTemplate                      │
+│  {context} + {chat_history} + {q}    │  ← context-aware prompt
+└──────────┬───────────────────────────┘
+│
+▼
+┌──────────────────────────────────────────────────┐
+│  Groq LLM  →  llama-3.1-8b-instant (inbuilt)    │
+└──────────┬───────────────────────────────────────┘
+│
+▼
+📊 Structured Output
+📌 Direct Answer
+📖 Explanation
+🔍 Source Reference
+💡 Key Takeaway
+
+┌─────────────────────────────┐
+│  ConversationBufferMemory   │  ← stores Q&A history for follow-ups
+└─────────────────────────────┘
+
 """
     )
 
@@ -532,14 +526,14 @@ def tab_architecture():
     components = {
         "DocumentLoaders":  "PyPDFLoader — loads PDF pages as LangChain Document objects",
         "TextSplitters":    "RecursiveCharacterTextSplitter — splits docs into overlapping chunks",
-        "Embeddings":       "HuggingFaceEmbeddings — converts text to vectors (local, free)",
+        "Embeddings":       "GoogleGenerativeAIEmbeddings — converts text to vectors using Gemini API",
         "VectorStores":     "FAISS — stores vectors for fast cosine-similarity search",
         "Retrievers":       "VectorStoreRetriever — finds top-k most relevant chunks",
         "PromptTemplates":  "PromptTemplate — injects context + history into LLM prompt",
         "Chains":           "ConversationalRetrievalChain — end-to-end RAG + memory chain",
         "Summarize":        "load_summarize_chain (map_reduce) — summarises long documents",
         "Memory":           "ConversationBufferMemory — keeps full chat history in RAM",
-        "LLM":              "ChatGroq → llama-3.3-70b-versatile (hardcoded, inbuilt)",
+        "LLM":              "ChatGroq → llama-3.1-8b-instant (hardcoded, inbuilt)",
     }
     for name, desc in components.items():
         st.markdown(
@@ -568,7 +562,7 @@ def main():
         unsafe_allow_html=True,
     )
 
-    # Sidebar (model info + stats only — no user input for model/key)
+    # Sidebar (model info + stats only)
     render_sidebar()
 
     # Tabs

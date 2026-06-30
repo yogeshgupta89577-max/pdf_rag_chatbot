@@ -5,7 +5,7 @@ Flow:
     PDF File
       → PyPDFLoader         (load raw text from each page)
       → RecursiveCharacterTextSplitter  (split into overlapping chunks)
-      → HuggingFaceEmbeddings           (convert text → vectors, runs locally)
+      → GoogleGenerativeAIEmbeddings    (convert text → vectors via Gemini API)
       → FAISS Vector Store              (store & search vectors efficiently)
 """
 
@@ -21,6 +21,7 @@ from config import (
     EMBEDDING_MODEL,
     TOP_K_RESULTS,
     VECTOR_STORE_PATH,
+    GOOGLE_API_KEY,
 )
 
 
@@ -29,19 +30,17 @@ from config import (
 # ─────────────────────────────────────────────────────────────────────────────
 def get_embeddings() -> GoogleGenerativeAIEmbeddings:
     """
-    Load Gemini Embedding model.
-    Uses Google's API (no local model download).
+    Load Gemini Embedding model using Google's API.
     """
+    if not GOOGLE_API_KEY:
+        raise ValueError("❌ GOOGLE_API_KEY missing in .env file! Required for Gemini Embeddings.")
 
     print("⏳ Loading Gemini Embedding model...")
-
     embeddings = GoogleGenerativeAIEmbeddings(
-        model="models/gemini-embedding-001",
-        google_api_key=os.getenv("GOOGLE_API_KEY")
+        model=EMBEDDING_MODEL,
+        google_api_key=GOOGLE_API_KEY
     )
-
     print("✅ Gemini Embedding model loaded.")
-
     return embeddings 
 
 
@@ -49,13 +48,7 @@ def get_embeddings() -> GoogleGenerativeAIEmbeddings:
 # PDF Loading & Chunking
 # ─────────────────────────────────────────────────────────────────────────────
 def load_and_split_pdf(pdf_path: str):
-    """
-    Load a PDF and split it into overlapping text chunks.
-
-    Why overlap?
-        Ensures that context isn't lost at chunk boundaries — a sentence
-        that spans two chunks is still fully captured in at least one.
-    """
+    """Load a PDF and split it into overlapping text chunks."""
     print(f"📄 Loading PDF: {os.path.basename(pdf_path)}")
     loader = PyPDFLoader(pdf_path)
     documents = loader.load()
@@ -64,7 +57,6 @@ def load_and_split_pdf(pdf_path: str):
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=CHUNK_SIZE,
         chunk_overlap=CHUNK_OVERLAP,
-        # Try to split at paragraph → sentence → word → character level
         separators=["\n\n", "\n", ". ", " ", ""],
         length_function=len,
     )
@@ -78,10 +70,7 @@ def load_and_split_pdf(pdf_path: str):
 # Vector Store — Create / Save / Load
 # ─────────────────────────────────────────────────────────────────────────────
 def create_vector_store(pdf_path: str) -> FAISS:
-    """
-    Full ingestion pipeline:
-        PDF → chunks → embeddings → FAISS index (saved to disk)
-    """
+    """Full Ingestion Pipeline: PDF → chunks → embeddings → FAISS index."""
     chunks    = load_and_split_pdf(pdf_path)
     embeddings = get_embeddings()
 
@@ -94,7 +83,7 @@ def create_vector_store(pdf_path: str) -> FAISS:
 
 
 def load_vector_store() -> FAISS:
-    """Load an existing FAISS index from disk (avoids re-embedding)."""
+    """Load an existing FAISS index from disk."""
     if not os.path.exists(VECTOR_STORE_PATH):
         raise FileNotFoundError(
             f"No vector store found at '{VECTOR_STORE_PATH}'. "
@@ -104,7 +93,7 @@ def load_vector_store() -> FAISS:
     vectorstore = FAISS.load_local(
         VECTOR_STORE_PATH,
         embeddings,
-        allow_dangerous_deserialization=True,   # required by FAISS for local files
+        allow_dangerous_deserialization=True,
     )
     print(f"✅ Vector store loaded from {VECTOR_STORE_PATH}")
     return vectorstore
@@ -114,11 +103,7 @@ def load_vector_store() -> FAISS:
 # Retriever
 # ─────────────────────────────────────────────────────────────────────────────
 def get_retriever(vectorstore: FAISS):
-    """
-    Wrap the vector store in a LangChain Retriever.
-    search_type='similarity'  →  cosine-similarity search
-    k=TOP_K_RESULTS           →  return the 4 most relevant chunks
-    """
+    """Wrap the vector store in a LangChain Retriever."""
     return vectorstore.as_retriever(
         search_type="similarity",
         search_kwargs={"k": TOP_K_RESULTS},

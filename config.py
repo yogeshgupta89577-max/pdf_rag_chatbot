@@ -8,13 +8,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# ── LLM Provider: Groq (inbuilt — no user input needed) ─────────────────────
+# ── LLM Provider: Groq ──────────────────────────────────────────────────────
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 GROQ_MODEL   = "llama-3.1-8b-instant"   # Fixed model, hardcoded
 
-# ── Embeddings ───────────────────────────────────────────────────────────────
-# Runs locally via sentence-transformers — completely FREE, no API key needed
-EMBEDDING_MODEL = "gemini-embedding-001"
+# ── Embeddings (Google Gemini) ──────────────────────────────────────────────
+GOOGLE_API_KEY  = os.getenv("GOOGLE_API_KEY", "")
+EMBEDDING_MODEL = "models/gemini-embedding-001"
 
 # ── Text Splitter ─────────────────────────────────────────────────────────────
 CHUNK_SIZE    = 1000   # characters per chunk

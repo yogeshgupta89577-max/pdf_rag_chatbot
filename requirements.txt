@@ -6,9 +6,9 @@ langchain-community==0.3.7
 # ── LLM Providers (install the one you need) ────────────────────────────────
 langchain-groq==0.2.1          # FREE — get key at console.groq.com
 
-# ── Embeddings (runs locally, no API key needed) ────────────────────────────
-langchain-huggingface==0.1.2
-sentence-transformers==3.3.1
+# ── Embeddings (runs locally,  API key needed) ────────────────────────────
+langchain-google-genai>=2.0.0
+google-generativeai>=0.8.5
 
 # ── Vector Store ─────────────────────────────────────────────────────────────
 faiss-cpu                    # CPU version — works on any machine
@@ -23,6 +23,5 @@ streamlit==1.40.0
 python-dotenv==1.0.1           # load .env file
 
 
-# ─────── gemini ───────────────────────────────────
-langchain-google-genai>=2.0.0
-google-generativeai>=0.8.5
+
+
